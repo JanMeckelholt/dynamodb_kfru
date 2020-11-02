@@ -16,6 +16,31 @@ module.exports.saveItem = item => {
 	});
 };
 
+
+module.exports.getCourses = programId => {
+	//const programId = event.pathParameters.programId;
+	var params = {
+	  TableName: TABLE_NAME,
+	  KeyConditionExpression: "PK = :PK and begins_with(SK, :SK)",
+	  //ExpressionAtrributeNames: {'#PK': 'PK', '#SK': 'SK'},
+	  ExpressionAttributeValues: {
+		  ":PK": `PROG#${programId}`,
+		  ":SK": "COUR#"
+	  }
+	};
+	console.log(params);
+	//var documentClient = new AWS.DynamoDB.DocumentClient();
+  
+	return dynamo.query(params, function(err, data) {
+			if (err) console.log(err);
+			else console.log(data);
+		}).promise().then(result => {
+			console.log(result);
+			return result.Items;
+		});
+  };
+
+
 module.exports.getItem = itemId => {
 	const params = {
 		Key: {
@@ -27,6 +52,8 @@ module.exports.getItem = itemId => {
 		return result.Item;
 	});
 };
+
+
 
 module.exports.deleteItem = itemId => {
 	const params = {

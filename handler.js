@@ -1,5 +1,7 @@
 'use strict';
 
+//const TABLE_NAME = process.env.ITEMS_DYNAMODB_TABLE;
+
 const databaseManager = require('./databaseManager');
 const { v4: uuidv4 } = require('uuid');
 
@@ -48,6 +50,14 @@ module.exports.saveStudent = (event, context, callback) => {
     console.log(response);
     callback(null, createResponse(200, response));
   });  
+};
+
+module.exports.getCourses = (event, context, callback) => {
+  const programId = event.pathParameters.programId;
+  databaseManager.getCourses(programId).then(response => {
+    console.log(response);
+    callback(null, createResponse(200, response));
+  }); 
 };
 
 // module.exports.getItem = (event, context, callback) => {

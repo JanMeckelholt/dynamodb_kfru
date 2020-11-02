@@ -18,6 +18,7 @@ provider:
   iamRoleStatements:
     - Effect: "Allow"
       Action:
+        - "dynamodb:Query"
         - "dynamodb:GetItem"
         - "dynamodb:PutItem"
         - "dynamodb:UpdateItem"
@@ -44,12 +45,12 @@ functions:
       - http:
           path: student/{programId}
           method: post
-  # getItem:
-  #   handler: handler.getItem
-  #   events:
-  #     - http:
-  #         path: item/{itemId}
-  #         method: get
+  getCourses:
+    handler: handler.getCourses
+    events:
+      - http:
+          path: course/{programId}
+          method: get
   # deleteItem:
   #   handler: handler.deleteItem
   #   events:
