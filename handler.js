@@ -52,49 +52,195 @@ module.exports.saveStudent = (event, context, callback) => {
   });  
 };
 
+module.exports.assignStudentToCourse = (event, context, callback) => {
+  const programId = event.pathParameters.programId;
+  const item = JSON.parse(event.body);
+  const studentId = item.studentId;
+  const courseId = item.courseId;
+  item.PK = `PROG#${programId}#COUR#${courseId}`;
+  item.SK = `PROG#${programId}#STUD#${studentId}`;
+
+  databaseManager.saveItem(item).then(response => {
+    console.log(response);
+    callback(null, createResponse(200, response));
+  });  
+};
+
 module.exports.getCourses = (event, context, callback) => {
   const programId = event.pathParameters.programId;
-  databaseManager.getCourses(programId).then(response => {
+  const query = {
+		KeyConditionExpression: "PK = :PK and begins_with(SK, :SK)",
+	  //ExpressionAttributeNames: {'#PK': 'PK', '#SK': 'SK'},
+	  ExpressionAttributeValues: {
+		  ":PK": `PROG#${programId}`,
+		  ":SK": "COUR#"
+	  }
+	}
+  
+  databaseManager.getItems(query).then(response => {
     console.log(response);
     callback(null, createResponse(200, response));
   }); 
 };
 
-// module.exports.getItem = (event, context, callback) => {
-//   const itemId = event.pathParameters.itemId;
+module.exports.getStudents = (event, context, callback) => {
+  const programId = event.pathParameters.programId;
+  const query = {
+		KeyConditionExpression: "PK = :PK and begins_with(SK, :SK)",
+	  //ExpressionAttributeNames: {'#PK': 'PK', '#SK': 'SK'},
+	  ExpressionAttributeValues: {
+		  ":PK": `PROG#${programId}`,
+		  ":SK": "STUD#"
+	  }
+	}
+  databaseManager.getItems(query).then(response => {
+    console.log(response);
+    callback(null, createResponse(200, response));
+  }); 
+};
 
-//   databaseManager.getItem(itemId).then(response => {
-//     console.log(response);
-//     callback(null, createResponse(200, response));
-//   });
-// };
+module.exports.getStudentsInCourse = (event, context, callback) => {
+  const programId = event.pathParameters.programId;
+  const courseId = event.pathParameters.courseId;
 
-
-// module.exports.deleteItem = (event, context, callback) => {
-//   const itemId = event.pathParameters.itemId;
-
-//   databaseManager.deleteItem(itemId).then(response => {
-//     callback(null, createResponse(200, 'Item was deleted'));
-//   });
-// };
-
-// module.exports.updateItem = (event, context, callback) => {
-//   const itemId = event.pathParameters.itemId;
-//   console.log(itemId);
+  const query = {
+		KeyConditionExpression: "PK = :PK",
+	  //ExpressionAttributeNames: {'#PK': 'PK', '#SK': 'SK'},
+	  ExpressionAttributeValues: {
+		  ":PK": `PROG#${programId}#COUR#${courseId}`
+	  }
+	}
   
-//   const body = JSON.parse(event.body);
+  databaseManager.getItems(query).then(response => {
+    console.log(response);
+    callback(null, createResponse(200, response));
+  }); 
+};
+module.exports.getCoursesOfStudent = (event, context, callback) => {
+  const programId = event.pathParameters.programId;
+  const studentId = event.pathParameters.studentId;
+
+  const query = {
+    IndexName: "SK-PK-Index",
+    KeyConditionExpression: "SK = :SK",
+	  //ExpressionAttributeNames: {'#PK': 'PK', '#SK': 'SK'},
+	  ExpressionAttributeValues: {
+		  ":SK": `PROG#${programId}#STUD#${studentId}`
+	  }
+	}
+  
+  databaseManager.getItems(query).then(response => {
+    console.log(response);
+    callback(null, createResponse(200, response));
+  }); 
+};
+
+module.exports.getProgram = (event, context, callback) => {
+  const programId = event.pathParameters.programId;
+  const key = {
+    PK: `PROG#${programId}`,
+    SK: `#METADATA#${programId}`
+  }
+  databaseManager.getItem(key).then(response => {
+    console.log(response);
+    callback(null, createResponse(200, response));
+  });
+};
+module.exports.getStudent = (event, context, callback) => {
+  const programId = event.pathParameters.programId;
+  const studentId = event.pathParameters.studentId;
+  const key = {
+    PK: `PROG#${programId}`,
+    SK: `STUD#${studentId}`
+  }
+  databaseManager.getItem(key).then(response => {
+    console.log(response);
+    callback(null, createResponse(200, response));
+  });
+};
+module.exports.getCourse = (event, context, callback) => {
+  const programId = event.pathParameters.programId;
+  const courseId = event.pathParameters.courseId;
+  const key = {
+    PK: `PROG#${programId}`,
+    SK: `COUR#${courseId}`
+  }
+  databaseManager.getItem(key).then(response => {
+    console.log(response);
+    callback(null, createResponse(200, response));
+  });
+};
+
+module.exports.removeStudentFromCourse = (event, context, callback) => {
+  const programId = event.pathParameters.programId;
+  const studentId = event.pathParameters.studentId;
+  const courseId = event.pathParameters.courseId;
+  const key = {
+    PK: `PROG#${programId}#COUR#${courseId}`,
+    SK: `PROG#${programId}#STUD#${studentId}`
+    }
+  databaseManager.deleteItem(key).then(response => {
+    callback(null, createResponse(200, 'Student was removed from Course'));
+  });  
+};
+
+module.exports.deleteStudent = (event, context, callback) => {
+  const programId = event.pathParameters.programId;
+  const studentId = event.pathParameters.studentId;
+  const key = {
+    PK: `PROG#${programId}`,
+    SK: `STUD#${studentId}`
+  }
+  
+  databaseManager.deleteItem(key).then(response => {
+    callback(null, createResponse(200, 'Student was deleted'));
+  });
+};
+module.exports.deleteCourse = (event, context, callback) => {
+  const programId = event.pathParameters.programId;
+  const courseId = event.pathParameters.courseId;
+  const key = {
+    PK: `PROG#${programId}`,
+    SK: `COUR#${courseId}`
+  }
+  
+  databaseManager.deleteItem(key).then(response => {
+    callback(null, createResponse(200, 'Course was deleted'));
+  });
+};
+module.exports.deleteProgram = (event, context, callback) => {
+  const programId = event.pathParameters.programId;
+  const key = {
+    PK: `PROG#${programId}`,
+    SK: `#METADATA#${programId}`
+  }
+  
+  databaseManager.deleteItem(key).then(response => {
+    callback(null, createResponse(200, 'Course was deleted'));
+  });
+};
+
+module.exports.updateStudent = (event, context, callback) => {
+  const programId = event.pathParameters.programId;
+  const studentId = event.pathParameters.studentId;
+  const key = {
+    PK: `PROG#${programId}`,
+    SK: `STUD#${studentId}`
+  }
+  
+  const body = JSON.parse(event.body);
  
-//   console.log("body after JSON.parse: ");
-//   console.log(body);
+  console.log("body after JSON.parse: ");
+  console.log(body);
   
-//   const paramName = body.paramName;
-//   const paramValue = body.paramValue;
-//   console.log("paramName: ");
-//   console.log(paramName);
-//   console.log("paramValue: ");
-//   console.log(paramValue);
-//   databaseManager.updateItem(itemId, paramName, paramValue).then(response => {
-//     console.log("Response: " + response);
-//     callback(null, createResponse(200, response));
-//   });
-// };
+  const paramName = body.paramName;
+  const paramValue = body.paramValue;
+  console.log("paramName: ");
+  console.log(paramName);
+  console.log("paramValue: ");
+  console.log(paramValue);
+  databaseManager.updateItem(key, paramName, paramValue).then(response => {
+    console.log("Response: " + response);
+    callback(null, createResponse(200, response));
+  });
+};

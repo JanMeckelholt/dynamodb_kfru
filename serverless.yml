@@ -1,6 +1,3 @@
-# org: bohlok
-# app: kfru-programs
-
 service: kfru-programs
 
 custom:
@@ -25,6 +22,7 @@ provider:
         - "dynamodb:DeleteItem"
       Resource:
         - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.settings.ITEMS_DYNAMODB_TABLE}"
+        - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.settings.ITEMS_DYNAMODB_TABLE}/*"
 
 functions:
   saveProgram:
@@ -45,18 +43,98 @@ functions:
       - http:
           path: student/{programId}
           method: post
+  assignStudentToCourse:
+    handler: handler.assignStudentToCourse
+    events:
+      - http:
+          path: studentCourse/{programId}
+          method: post
   getCourses:
     handler: handler.getCourses
     events:
       - http:
           path: course/{programId}
           method: get
-  # deleteItem:
-  #   handler: handler.deleteItem
-  #   events:
-  #     - http:
-  #         path: item/{itemId}
-  #         method: delete
+  getStudents:
+    handler: handler.getStudents
+    events:
+      - http:
+          path: student/{programId}
+          method: get
+  getStudentsInCourse:
+    handler: handler.getStudentsInCourse
+    events:
+      - http:
+          path: studentsInCourse/{programId}/{courseId}
+          method: get
+  getCoursesOfStudent:
+    handler: handler.getCoursesOfStudent
+    events:
+      - http:
+          path: coursesOfStudent/{programId}/{studentId}
+          method: get
+  getProgram:
+    handler: handler.getProgram
+    events:
+      - http:
+          path: program/{programId}
+          method: get
+  getStudent:
+    handler: handler.getStudent
+    events:
+      - http:
+          path: student/{programId}/{studentId}
+          method: get
+  getCourse:
+    handler: handler.getCourse
+    events:
+      - http:
+          path: course/{programId}/{courseId}
+          method: get
+
+
+  removeStudentFromCourse:
+    handler: handler.removeStudentFromCourse
+    events:
+      - http:
+          path: studentCourse/{programId}/{studentId}/{courseId}
+          method: delete
+  deleteStudent:
+    handler: handler.deleteStudent
+    events:
+      - http:
+          path: student/{programId}/{studentId}
+          method: delete
+  deleteCourse:
+    handler: handler.deleteCourse
+    events:
+      - http:
+          path: course/{programId}/{courseId}
+          method: delete
+  deleteProgram:
+    handler: handler.deleteProgram
+    events:
+      - http:
+          path: program/{programId}
+          method: delete
+  updateStudent:
+    handler: handler.updateStudent
+    events:
+      - http:
+          path: student/{programId}/{studentId}
+          method: put
+  updateCourse:
+    handler: handler.updateCourse
+    events:
+      - http:
+          path: course/{programId}/{courseId}
+          method: put
+  updateProgram:
+    handler: handler.updateProgram
+    events:
+      - http:
+          path: program/{programId}
+          method: put
   # updateItem:
   #   handler: handler.updateItem
   #   events:

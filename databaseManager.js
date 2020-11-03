@@ -17,17 +17,10 @@ module.exports.saveItem = item => {
 };
 
 
-module.exports.getCourses = programId => {
+module.exports.getItems = query => {
 	//const programId = event.pathParameters.programId;
-	var params = {
-	  TableName: TABLE_NAME,
-	  KeyConditionExpression: "PK = :PK and begins_with(SK, :SK)",
-	  //ExpressionAtrributeNames: {'#PK': 'PK', '#SK': 'SK'},
-	  ExpressionAttributeValues: {
-		  ":PK": `PROG#${programId}`,
-		  ":SK": "COUR#"
-	  }
-	};
+	var params = query;
+	params.TableName = TABLE_NAME;
 	console.log(params);
 	//var documentClient = new AWS.DynamoDB.DocumentClient();
   
@@ -41,11 +34,9 @@ module.exports.getCourses = programId => {
   };
 
 
-module.exports.getItem = itemId => {
+module.exports.getItem = key => {
 	const params = {
-		Key: {
-			itemId: itemId
-		},
+		Key: key,
 		TableName: TABLE_NAME
 	};
 	return dynamo.get(params).promise().then(result => {
@@ -55,29 +46,24 @@ module.exports.getItem = itemId => {
 
 
 
-module.exports.deleteItem = itemId => {
+module.exports.deleteItem = key => {
 	const params = {
-		Key: {
-			itemId: itemId
-		},
+		Key: key,
 		TableName: TABLE_NAME
 	};
 	return dynamo.delete(params).promise();
 };
 
-module.exports.updateItem = (itemId, paramsName, paramsValue) => {
-	console.log(itemId);
-	console.log(paramsName);
-	console.log(paramsValue);
+module.exports.updateItem = (key, paramName, paramValue) => {
+	console.log(key);
+	console.log(paramName);
+	console.log(paramValue);
 	const params = {
 		TableName: TABLE_NAME,
-		Key: {
-			itemId
-		},
-		ConditionExpression: 'attribute_exists(itemId)',
-		UpdateExpression: 'set ' + paramsName + ' = :v',
+		Key: key,
+		UpdateExpression: 'set ' + paramName + ' = :v',
 		ExpressionAttributeValues: {
-			':v': paramsValue
+			':v': paramValue
 		},
 		ReturnValues: 'ALL_NEW'
 	};
