@@ -135,13 +135,20 @@ functions:
       - http:
           path: program/{programId}
           method: put
-  # updateItem:
-  #   handler: handler.updateItem
-  #   events:
-  #     - http:
-  #         path: item/{itemId}
-  #         method: put
 
+          
+  getStudentByName:
+    handler: handler.getStudentByName
+    events:
+      - http:
+          path: studentByName/{programId}/{studentName}
+          method: get          
+  getCourseByName:
+    handler: handler.getCourseByName
+    events:
+      - http:
+          path: courseByName/{programId}/{courseName}
+          method: get          
 
 resources:
   Resources:

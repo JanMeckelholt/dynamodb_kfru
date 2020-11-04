@@ -244,3 +244,43 @@ module.exports.updateStudent = (event, context, callback) => {
     callback(null, createResponse(200, response));
   });
 };
+
+module.exports.getStudentByName = (event, context, callback) => {
+  const programId = event.pathParameters.programId;
+  const studentName = decodeURI(event.pathParameters.studentName);
+  const query = {
+    IndexName: "PK-data-Index",
+    KeyConditionExpression: "#PK = :PK and begins_with(#SK, :SK)",
+    ExpressionAttributeNames: {'#PK': 'PK', '#SK': 'data'},
+    ExpressionAttributeValues: {
+      ":PK": `PROG#${programId}`,
+      ":SK": `STUD#${studentName}`
+    }
+  };
+  databaseManager.getItems(query).then(response => {
+    console.log(response);
+    callback(null, createResponse(200, response));
+  }); 
+};
+module.exports.getCourseByName = (event, context, callback) => {
+  const programId = event.pathParameters.programId;
+  const courseName = decodeURI(event.pathParameters.courseName);
+  const query = {
+    IndexName: "PK-data-Index",
+    KeyConditionExpression: "#PK = :PK and begins_with(#SK, :SK)",
+    ExpressionAttributeNames: {'#PK': 'PK', '#SK': 'data'},
+    ExpressionAttributeValues: {
+      ":PK": `PROG#${programId}`,
+      ":SK": `COUR#${courseName}`
+    }
+  };
+  databaseManager.getItems(query).then(response => {
+    console.log(response);
+    callback(null, createResponse(200, response));
+  }); 
+};
+
+
+
+
+
