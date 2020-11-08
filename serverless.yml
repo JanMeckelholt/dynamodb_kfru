@@ -1,8 +1,24 @@
+org: bohlok
+app: kfru
+
 service: kfru-programs
 
 custom:
   settings:
     ITEMS_DYNAMODB_TABLE: kfru-programs
+    DEPENDENCY_LAYER: dev-dependencies-layer:2
+    ACCOUNT: 702306540712
+
+
+layers:
+  dependencies:
+    path: dependencies-layer
+    name: ${self:provider.stage}-dependencies-layer # optional
+    description: Description of what the lambda layer does # optional
+    compatibleRuntimes: # optional
+      - nodejs12.x
+    allowedAccounts:
+      - '*' # all accounts or specify your account!
 
 provider:
   name: aws
@@ -10,7 +26,6 @@ provider:
   profile: default
   region: eu-central-1
   environment: ${self:custom.settings}
-
 
   iamRoleStatements:
     - Effect: "Allow"
@@ -27,66 +42,89 @@ provider:
 functions:
   saveProgram:
     handler: handler.saveProgram
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
+      # arn:aws:lambda:eu-central-1:702306540712:layer:dev-dependencies-layer:2
     events:
       - http:
           path: program
           method: post
   saveCourse:
     handler: handler.saveCourse
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: course/{programId}
           method: post
   saveStudent:
     handler: handler.saveStudent
+    layers: 
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: student/{programId}
           method: post
   assignStudentToCourse:
     handler: handler.assignStudentToCourse
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: studentCourse/{programId}
           method: post
   getCourses:
     handler: handler.getCourses
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: course/{programId}
           method: get
   getStudents:
     handler: handler.getStudents
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: student/{programId}
           method: get
   getStudentsInCourse:
     handler: handler.getStudentsInCourse
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: studentsInCourse/{programId}/{courseId}
           method: get
   getCoursesOfStudent:
     handler: handler.getCoursesOfStudent
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: coursesOfStudent/{programId}/{studentId}
           method: get
   getProgram:
     handler: handler.getProgram
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: program/{programId}
           method: get
   getStudent:
     handler: handler.getStudent
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: student/{programId}/{studentId}
           method: get
   getCourse:
     handler: handler.getCourse
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: course/{programId}/{courseId}
@@ -95,42 +133,56 @@ functions:
 
   removeStudentFromCourse:
     handler: handler.removeStudentFromCourse
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: studentCourse/{programId}/{studentId}/{courseId}
           method: delete
   deleteStudent:
     handler: handler.deleteStudent
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: student/{programId}/{studentId}
           method: delete
   deleteCourse:
     handler: handler.deleteCourse
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: course/{programId}/{courseId}
           method: delete
   deleteProgram:
     handler: handler.deleteProgram
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: program/{programId}
           method: delete
   updateStudent:
     handler: handler.updateStudent
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: student/{programId}/{studentId}
           method: put
   updateCourse:
     handler: handler.updateCourse
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: course/{programId}/{courseId}
           method: put
   updateProgram:
     handler: handler.updateProgram
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: program/{programId}
@@ -139,12 +191,16 @@ functions:
           
   getStudentByName:
     handler: handler.getStudentByName
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: studentByName/{programId}/{studentName}
           method: get          
   getCourseByName:
     handler: handler.getCourseByName
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: courseByName/{programId}/{courseName}

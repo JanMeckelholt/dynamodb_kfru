@@ -10,28 +10,19 @@ module.exports.saveItem = item => {
 		TableName: TABLE_NAME,
 		Item: item
 	};
-
 	return dynamo.put(params).promise().then(() => {
-		return item.itemId;
+		return item;
 	});
 };
 
 
 module.exports.getItems = query => {
-	//const programId = event.pathParameters.programId;
 	var params = query;
 	params.TableName = TABLE_NAME;
-	console.log(params);
-	//var documentClient = new AWS.DynamoDB.DocumentClient();
-  
-	return dynamo.query(params, function(err, data) {
-			if (err) console.log(err);
-			else console.log(data);
-		}).promise().then(result => {
-			console.log(result);
+	return dynamo.query(params).promise().then(result => {
 			return result.Items;
 		});
-  };
+};
 
 
 module.exports.getItem = key => {
@@ -61,9 +52,12 @@ module.exports.updateItem = (key, paramName, paramValue) => {
 	const params = {
 		TableName: TABLE_NAME,
 		Key: key,
-		UpdateExpression: 'set ' + paramName + ' = :v',
+		UpdateExpression: 'set #pN = :pV',
+		ExpressionAttributeNames: {
+			'#pN': paramName
+		},
 		ExpressionAttributeValues: {
-			':v': paramValue
+			':pV': paramValue
 		},
 		ReturnValues: 'ALL_NEW'
 	};

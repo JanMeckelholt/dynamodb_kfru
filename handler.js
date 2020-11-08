@@ -1,11 +1,15 @@
-'use strict';
 
-//const TABLE_NAME = process.env.ITEMS_DYNAMODB_TABLE;
+//mkdir cd
+//npm init -y
+//yarn add aws-sdk dayjs uuid --save
+//create table in dynamoDB-console
+
+//aws configure
+
+'use strict';
 
 const databaseManager = require('./databaseManager');
 const { v4: uuidv4 } = require('uuid');
-
-
 
 function createResponse(statusCode, message){
   return {
@@ -47,7 +51,7 @@ module.exports.saveStudent = (event, context, callback) => {
   item.SK = `STUD#${studentId}`;
 
   databaseManager.saveItem(item).then(response => {
-    console.log(response);
+    console.log("Response saveStudent: " + response);
     callback(null, createResponse(200, response));
   });  
 };
@@ -203,7 +207,6 @@ module.exports.deleteCourse = (event, context, callback) => {
     PK: `PROG#${programId}`,
     SK: `COUR#${courseId}`
   }
-  
   databaseManager.deleteItem(key).then(response => {
     callback(null, createResponse(200, 'Course was deleted'));
   });
@@ -214,7 +217,6 @@ module.exports.deleteProgram = (event, context, callback) => {
     PK: `PROG#${programId}`,
     SK: `#METADATA#${programId}`
   }
-  
   databaseManager.deleteItem(key).then(response => {
     callback(null, createResponse(200, 'Course was deleted'));
   });
@@ -227,18 +229,41 @@ module.exports.updateStudent = (event, context, callback) => {
     PK: `PROG#${programId}`,
     SK: `STUD#${studentId}`
   }
-  
   const body = JSON.parse(event.body);
- 
-  console.log("body after JSON.parse: ");
-  console.log(body);
-  
   const paramName = body.paramName;
   const paramValue = body.paramValue;
-  console.log("paramName: ");
-  console.log(paramName);
-  console.log("paramValue: ");
-  console.log(paramValue);
+
+  databaseManager.updateItem(key, paramName, paramValue).then(response => {
+    console.log("Response: " + response);
+    callback(null, createResponse(200, response));
+  });
+};
+module.exports.updateCourse = (event, context, callback) => {
+  const programId = event.pathParameters.programId;
+  const courseId = event.pathParameters.courseId;
+  const key = {
+    PK: `PROG#${programId}`,
+    SK: `COUR#${courseId}`
+  }
+  const body = JSON.parse(event.body);
+  const paramName = body.paramName;
+  const paramValue = body.paramValue;
+
+  databaseManager.updateItem(key, paramName, paramValue).then(response => {
+    console.log("Response: " + response);
+    callback(null, createResponse(200, response));
+  });
+};
+module.exports.updateProgram = (event, context, callback) => {
+  const programId = event.pathParameters.programId;
+  const key = {
+    PK: `PROG#${programId}`,
+    SK: `#METADATA${programId}`
+  }
+  const body = JSON.parse(event.body);
+  const paramName = body.paramName;
+  const paramValue = body.paramValue;
+
   databaseManager.updateItem(key, paramName, paramValue).then(response => {
     console.log("Response: " + response);
     callback(null, createResponse(200, response));
