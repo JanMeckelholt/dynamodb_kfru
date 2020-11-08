@@ -39,6 +39,26 @@ provider:
         - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.settings.ITEMS_DYNAMODB_TABLE}"
         - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.settings.ITEMS_DYNAMODB_TABLE}/*"
 
+resources:
+  Resources:
+    ImagesTable:
+      Type: "AWS::DynamoDB::Table"
+      Properties:
+        AttributeDefinitions:
+        - AttributeName: "PK"
+          AttributeType: "S"
+        - AttributeName: "SK"
+          AttributeType: "S"
+        KeySchema:
+        - AttributeName: "PK"
+          KeyType: "HASH"
+        - AttributeName: "SK"
+          KeyType: "RANGE"
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:custom.settings.ITEMS_DYNAMODB_TABLE}
+
 functions:
   saveProgram:
     handler: handler.saveProgram
@@ -49,14 +69,7 @@ functions:
       - http:
           path: program
           method: post
-  saveCourse:
-    handler: handler.saveCourse
-    layers: # layer refs
-      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
-    events:
-      - http:
-          path: course/{programId}
-          method: post
+
   saveStudent:
     handler: handler.saveStudent
     layers: 
@@ -65,22 +78,7 @@ functions:
       - http:
           path: student/{programId}
           method: post
-  assignStudentToCourse:
-    handler: handler.assignStudentToCourse
-    layers: # layer refs
-      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
-    events:
-      - http:
-          path: studentCourse/{programId}
-          method: post
-  getCourses:
-    handler: handler.getCourses
-    layers: # layer refs
-      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
-    events:
-      - http:
-          path: course/{programId}
-          method: get
+
   getStudents:
     handler: handler.getStudents
     layers: # layer refs
@@ -89,14 +87,7 @@ functions:
       - http:
           path: student/{programId}
           method: get
-  getStudentsInCourse:
-    handler: handler.getStudentsInCourse
-    layers: # layer refs
-      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
-    events:
-      - http:
-          path: studentsInCourse/{programId}/{courseId}
-          method: get
+
   getCoursesOfStudent:
     handler: handler.getCoursesOfStudent
     layers: # layer refs
@@ -121,14 +112,7 @@ functions:
       - http:
           path: student/{programId}/{studentId}
           method: get
-  getCourse:
-    handler: handler.getCourse
-    layers: # layer refs
-      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
-    events:
-      - http:
-          path: course/{programId}/{courseId}
-          method: get
+
 
 
   removeStudentFromCourse:
@@ -147,14 +131,7 @@ functions:
       - http:
           path: student/{programId}/{studentId}
           method: delete
-  deleteCourse:
-    handler: handler.deleteCourse
-    layers: # layer refs
-      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
-    events:
-      - http:
-          path: course/{programId}/{courseId}
-          method: delete
+
   deleteProgram:
     handler: handler.deleteProgram
     layers: # layer refs
@@ -171,14 +148,7 @@ functions:
       - http:
           path: student/{programId}/{studentId}
           method: put
-  updateCourse:
-    handler: handler.updateCourse
-    layers: # layer refs
-      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
-    events:
-      - http:
-          path: course/{programId}/{courseId}
-          method: put
+
   updateProgram:
     handler: handler.updateProgram
     layers: # layer refs
@@ -197,31 +167,144 @@ functions:
       - http:
           path: studentByName/{programId}/{studentName}
           method: get          
+     
+
+###Functions for Exercises#
+  saveCourse:
+    handler: courses_handler.saveCourse
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
+    events:
+      - http:
+          path: course/{programId}
+          method: post
+  getCourses:
+    handler: courses_handler.getCourses
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
+    events:
+      - http:
+          path: course/{programId}
+          method: get
+  getCourse:
+    handler: courses_handler.getCourse
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
+    events:
+      - http:
+          path: course/{programId}/{courseId}
+          method: get
+  deleteCourse:
+    handler: courses_handler.deleteCourse
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
+    events:
+      - http:
+          path: course/{programId}/{courseId}
+          method: delete
+  updateCourse:
+    handler: courses_handler.updateCourse
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
+    events:
+      - http:
+          path: course/{programId}/{courseId}
+          method: put
+
   getCourseByName:
-    handler: handler.getCourseByName
+    handler: courses_handler.getCourseByName
     layers: # layer refs
       - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
     events:
       - http:
           path: courseByName/{programId}/{courseName}
-          method: get          
+          method: get     
 
-resources:
-  Resources:
-    ImagesTable:
-      Type: "AWS::DynamoDB::Table"
-      Properties:
-        AttributeDefinitions:
-        - AttributeName: "PK"
-          AttributeType: "S"
-        - AttributeName: "SK"
-          AttributeType: "S"
-        KeySchema:
-        - AttributeName: "PK"
-          KeyType: "HASH"
-        - AttributeName: "SK"
-          KeyType: "RANGE"
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
-        TableName: ${self:custom.settings.ITEMS_DYNAMODB_TABLE}
+  getStudentsInCourse:
+    handler: courses_handler.getStudentsInCourse
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
+    events:
+      - http:
+          path: studentsInCourse/{programId}/{courseId}
+          method: get
+  
+  assignStudentToCourse:
+    handler: courses_handler.assignStudentToCourse
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
+    events:
+      - http:
+          path: studentCourse/{programId}
+          method: post
+
+
+###Functions for Exercises 
+###Group01
+  group01_saveCourse:
+    handler: courses_handler.saveCourse
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
+    events:
+      - http:
+          path: group01/course/{programId}
+          method: post
+  group01_getCourses:
+    handler: courses_handler.getCourses
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
+    events:
+      - http:
+          path: group01/course/{programId}
+          method: get
+  group01_getCourse:
+    handler: courses_handler.getCourse
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
+    events:
+      - http:
+          path: group01/course/{programId}/{courseId}
+          method: get
+  group01_deleteCourse:
+    handler: courses_handler.deleteCourse
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
+    events:
+      - http:
+          path: group01/course/{programId}/{courseId}
+          method: delete
+  group01_updateCourse:
+    handler: courses_handler.updateCourse
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
+    events:
+      - http:
+          path: group01/course/{programId}/{courseId}
+          method: put
+
+  group01_getCourseByName:
+    handler: courses_handler.getCourseByName
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
+    events:
+      - http:
+          path: group01/courseByName/{programId}/{courseName}
+          method: get     
+
+  group01_getStudentsInCourse:
+    handler: courses_handler.getStudentsInCourse
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
+    events:
+      - http:
+          path: group01/studentsInCourse/{programId}/{courseId}
+          method: get
+  
+  group01_assignStudentToCourse:
+    handler: courses_handler.assignStudentToCourse
+    layers: # layer refs
+      - "arn:aws:lambda:${self:provider.region}:${self:custom.settings.ACCOUNT}:layer:${self:custom.settings.DEPENDENCY_LAYER}"
+    events:
+      - http:
+          path: group01/studentCourse/{programId}
+          method: post
