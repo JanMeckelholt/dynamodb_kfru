@@ -13,11 +13,18 @@ function createResponse(statusCode, message){
 }
 
 module.exports.saveCourse = (event, context, callback) => {
+    //Definiere Partion-Key und Sort-Key um einen neuen Kurs zu speichern.
+    //Du bekommst das Programm zu dem der Kurs gehört aus der pathParameters übergeben (programId)
+    //Die Kurs-ID wird hier erzeugt (courseId)
+    //Die sonstigen Parameter des Kurses durch den Benutzer frei wählbar und werden in der
+    //POST-Anfrage mitgeschickt.   
     const programId = event.pathParameters.programId;
-    const item = JSON.parse(event.body);
     const courseId = uuidv4();
-    item.PK = `PROG#${programId}`;
-    item.SK = `COUR#${courseId}`;
+    const item = JSON.parse(event.body);
+
+
+    //item.PK = "Your PK goes here";
+    //item.SK = "Your SK goes here";
     item.notice = "saved by group03";
   
     databaseManager.saveItem(item).then(response => {
@@ -27,12 +34,14 @@ module.exports.saveCourse = (event, context, callback) => {
   };
 
   module.exports.getCourses = (event, context, callback) => {
+    //Definiere Partion-Key und Sort-Key um alle Kurse eines Programms abzurufen.
+    //Du bekommst das Programm zu dem der Kurs gehört aus der pathParameters übergeben (programId)
     const programId = event.pathParameters.programId;
     const query = {
-          KeyConditionExpression: "PK = :PK and begins_with(SK, :SK)",
+        KeyConditionExpression: "PK = :PK and begins_with(SK, :SK)",
         ExpressionAttributeValues: {
-            ":PK": `PROG#${programId}`,
-            ":SK": "COUR#"
+        //    ":PK": "Your PK goes here",
+        //    ":SK": "Your SK goes here"
         }
       }
     
@@ -43,11 +52,14 @@ module.exports.saveCourse = (event, context, callback) => {
   };
 
   module.exports.getCourse = (event, context, callback) => {
+    //Definiere Partion-Key und Sort-Key um einen Kurs abzurufen.
+    //Du bekommst das Programm zu dem der Kurs gehört (programId)
+    //und den Kurs (courseId) in den pathParameters übergeben.
     const programId = event.pathParameters.programId;
     const courseId = event.pathParameters.courseId;
     const key = {
-      PK: `PROG#${programId}`,
-      SK: `COUR#${courseId}`
+      //PK: "Your PK goes here",
+      //SK: "Your SK goes here"
     }
     databaseManager.getItem(key).then(response => {
       console.log(response);
@@ -56,27 +68,30 @@ module.exports.saveCourse = (event, context, callback) => {
   };
 
   module.exports.deleteCourse = (event, context, callback) => {
-    const programId = event.pathParameters.programId;
-    const courseId = event.pathParameters.courseId;
-    const key = {
-      PK: `PROG#${programId}`,
-      SK: `COUR#${courseId}`
-    }
+    //Definiere Partion-Key und Sort-Key um einen Kurs zu löschen.
+    //Du bekommst das Programm zu dem der Kurs gehört (programId)
+    //und den Kurs (courseId) in den pathParameters übergeben.
+    //Orientiere dich an der Funktion "getCourse".
+
+    //Your Code goes here.
+
     databaseManager.deleteItem(key).then(response => {
-      callback(null, createResponse(200, 'Course was deleted  by group03-function'));
+      callback(null, createResponse(200, 'Course was deleted by group03-function'));
     });
   };
 
   module.exports.updateCourse = (event, context, callback) => {
-    const programId = event.pathParameters.programId;
-    const courseId = event.pathParameters.courseId;
-    const key = {
-      PK: `PROG#${programId}`,
-      SK: `COUR#${courseId}`
-    }
-    const body = JSON.parse(event.body);
-    const paramName = body.paramName;
-    const paramValue = body.paramValue;
+    //Definiere Partion-Key und Sort-Key um ein Key-Value-Paar eines Kurses zu ändern.
+    //Du bekommst das Programm zu dem der Kurs gehört (programId)
+    //und den Kurs (courseId) in den pathParameters übergeben.
+    //Im Body des Put-Aufrufes wird der zu ändernde Key als 'paramName' und
+    //der neue Wert dieses Keys als 'paramValue' mitgesendet.
+    //Beispiel {"paramName": "email", "paramValue": "neue@email.de"}
+
+    // Your Code to define the key with PK and SK from the pathParameters goes here.
+
+    //Your Code to define the paramName and paramValue from the event.body goes here.
+    //Maybe JSON.parse(event.body) can be helpfull.
   
     databaseManager.updateItem(key, paramName, paramValue).then(response => {
       console.log("Response: " + response);
@@ -103,13 +118,18 @@ module.exports.saveCourse = (event, context, callback) => {
   };
   
   module.exports.getStudentsInCourse = (event, context, callback) => {
+    //Definiere Partion-Key und Sort-Key um alle Studenten 
+    //eines Kurses abzurufen.
+    //Du bekommst das Programm zu dem der Kurs gehört (programId)
+    //und den Kurs (courseId) in den pathParameters übergeben.
     const programId = event.pathParameters.programId;
     const courseId = event.pathParameters.courseId;
   
     const query = {
-          KeyConditionExpression: "PK = :PK",
+        KeyConditionExpression: "PK = :PK",
         ExpressionAttributeValues: {
-            ":PK": `PROG#${programId}#COUR#${courseId}`
+          //  ":PK": Your PK goes here
+          //  ":SK": Your SK goes here ...if needed... :-)
         }
       }
     
@@ -120,12 +140,21 @@ module.exports.saveCourse = (event, context, callback) => {
   };
 
   module.exports.assignStudentToCourse = (event, context, callback) => {
+    //Definiere Partion-Key und Sort-Key einen Student in einen 
+    //Kurs einzuschreiben.
+    //Du bekommst das übergeordnete Programm (programId)
+    //in den pathParameters übergeben.
+    //Dem Post-Aufruf wird im Body die Studenten-ID und
+    //die Kurs-Id mitgegeben.
+    //Beispiel {"studentId": "12345", "courseId": "67890", "optional": "something additional"}
     const programId = event.pathParameters.programId;
-    const item = JSON.parse(event.body);
-    const studentId = item.studentId;
-    const courseId = item.courseId;
-    item.PK = `PROG#${programId}#COUR#${courseId}`;
-    item.SK = `PROG#${programId}#STUD#${studentId}`;
+    
+    //const studentId = Your Code to define studentId goes here
+    //const courseId = Your Code to define studentId goes here
+    //nutze JSON.parse(event.body)
+
+    //item.PK = Your Code to define PK goes here
+    //item.SK = Your Code to define SK goes here
   
     databaseManager.saveItem(item).then(response => {
       console.log(response);
