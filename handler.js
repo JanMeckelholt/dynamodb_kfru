@@ -36,15 +36,17 @@ module.exports.saveStudent = (event, context, callback) => {
   const programId = event.pathParameters.programId;
   const item = JSON.parse(event.body);
   const studentId = uuidv4();
+  const studentName = item.name ? item.name : "";
+  
   item.PK = `PROG#${programId}`;
   item.SK = `STUD#${studentId}`;
+  item.data = `STUD#${studentName}`;
 
   databaseManager.saveItem(item).then(response => {
     console.log("Response saveStudent: " + response);
     callback(null, createResponse(200, response));
   });  
 };
-
 
 
 module.exports.getStudents = (event, context, callback) => {
@@ -115,7 +117,7 @@ module.exports.removeStudentFromCourse = (event, context, callback) => {
     SK: `PROG#${programId}#STUD#${studentId}`
     }
   databaseManager.deleteItem(key).then(response => {
-    callback(null, createResponse(200, 'Student was removed from Course'));
+    callback(null, createResponse(200, response));
   });  
 };
 
@@ -128,7 +130,7 @@ module.exports.deleteStudent = (event, context, callback) => {
   }
   
   databaseManager.deleteItem(key).then(response => {
-    callback(null, createResponse(200, 'Student was deleted'));
+    callback(null, createResponse(200, response));
   });
 };
 
@@ -139,7 +141,7 @@ module.exports.deleteProgram = (event, context, callback) => {
     SK: `#METADATA#${programId}`
   }
   databaseManager.deleteItem(key).then(response => {
-    callback(null, createResponse(200, 'Course was deleted'));
+    callback(null, createResponse(200, response));
   });
 };
 

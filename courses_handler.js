@@ -1,3 +1,6 @@
+//Solution to DynamoDB-Exercises
+//Find me in https://github.com/JanMeckelholt/dynamodb_kfru.git
+//courses_handler.js
 
 'use strict';
 
@@ -15,9 +18,12 @@ module.exports.saveCourse = (event, context, callback) => {
     const programId = event.pathParameters.programId;
     const item = JSON.parse(event.body);
     const courseId = uuidv4();
+    const courseName = item.name ? item.name : "";
+
     item.PK = `PROG#${programId}`;
     item.SK = `COUR#${courseId}`;
-  
+    item.data = `COUR#${courseName}`;
+
     databaseManager.saveItem(item).then(response => {
       console.log(response);
       callback(null, createResponse(200, response));
@@ -61,7 +67,7 @@ module.exports.saveCourse = (event, context, callback) => {
       SK: `COUR#${courseId}`
     }
     databaseManager.deleteItem(key).then(response => {
-      callback(null, createResponse(200, 'Course was deleted'));
+      callback(null, createResponse(200, response));
     });
   };
 
@@ -120,13 +126,21 @@ module.exports.saveCourse = (event, context, callback) => {
   module.exports.assignStudentToCourse = (event, context, callback) => {
     const programId = event.pathParameters.programId;
     const item = JSON.parse(event.body);
-    const studentId = item.studentId;
-    const courseId = item.courseId;
-    item.PK = `PROG#${programId}#COUR#${courseId}`;
-    item.SK = `PROG#${programId}#STUD#${studentId}`;
+    if (item.hasOwnProperty("courseId") && item.hasOwnProperty("studentId")){
+    
+      const studentId = item.studentId;
+      const courseId = item.courseId;
+      item.PK = `PROG#${programId}#COUR#${courseId}`;
+      item.SK = `PROG#${programId}#STUD#${studentId}`;
+      delete item.studentId;
+      delete item.courseId;
+    
+      databaseManager.saveItem(item).then(response => {
+        console.log(response);
+        callback(null, createResponse(200, response));
+      });
+    } else {
+      callback(null, createResponse(422, "courseId and studentId are required")) 
+    }
   
-    databaseManager.saveItem(item).then(response => {
-      console.log(response);
-      callback(null, createResponse(200, response));
-    });  
   };

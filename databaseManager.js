@@ -40,9 +40,12 @@ module.exports.getItem = key => {
 module.exports.deleteItem = key => {
 	const params = {
 		Key: key,
-		TableName: TABLE_NAME
+		TableName: TABLE_NAME,
+		ReturnValues: 'ALL_OLD'
 	};
-	return dynamo.delete(params).promise();
+	return dynamo.delete(params).promise().then(response =>{
+		return response.Attributes;
+	});
 };
 
 module.exports.updateItem = (key, paramName, paramValue) => {
@@ -53,6 +56,7 @@ module.exports.updateItem = (key, paramName, paramValue) => {
 		TableName: TABLE_NAME,
 		Key: key,
 		UpdateExpression: 'set #pN = :pV',
+		ConditionExpression: 'attribute_exists(#pN)',
 		ExpressionAttributeNames: {
 			'#pN': paramName
 		},
